@@ -38,6 +38,8 @@ def getColorROI(frame, h_range=(20, 200), saturation = 128):
       frame : イメージのarray(0~255, RGB_color_channel)
       h_range : tuple of h_range (min_range, max_range)
       saturation : saturation (0~255)
+    Returns:
+      roi : 0or1の行列（[height, width]）
     """
     # BGRイメージをHSV表現に変換する
     frame_hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV_FULL)
@@ -45,9 +47,8 @@ def getColorROI(frame, h_range=(20, 200), saturation = 128):
     frame_s = frame_hsv[:,:,1] # 彩度
     frame_v = frame_hsv[:,:,2] # 明度
     # ROIの作成
-    roi = np.zeros_like(frame_h, dtype=np.uint8)
     ## opencvで取り込んだ画像データがuint8なので、ROIマスクも同じ型にする
-    #roi[( (frame_h < 20)|(frame_h>200) ) & (frame_s>128)] = 1
+    roi = np.zeros_like(frame_h, dtype=np.uint8)
     min_range_h = h_range[0]
     max_range_h = h_range[1]
     roi[( ((frame_h>min_range_h)&(frame_h<=max_range_h))

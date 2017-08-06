@@ -19,6 +19,7 @@ if __name__=="__main__":
         k = cv2.waitKey(1) # 1msec待つ
         if k == 27: # ESCキーで終了
             break
+    print frame.shape
 
     cap.release()
     cv2.destroyAllWindows()
