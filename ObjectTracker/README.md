@@ -5,3 +5,9 @@
 - Python : Python 2.7
 - opencv2.4.11
 - web camera 
+
+## How To Use
+
+```
+$ 
+```

@@ -1,7 +1,5 @@
-
 *.pyc
 
-note_local.md
-
 test/
+
 .ipynb_checkpoints/
