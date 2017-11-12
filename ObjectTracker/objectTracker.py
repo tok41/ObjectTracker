@@ -5,34 +5,6 @@ import numpy as np
 import cv2
 from scipy import stats
 
-def getHueRange(color_map, h_width = 30):
-    """
-    Args:
-      color_map : tuple(R,G,B), 0.0~1.0
-      h_width : Hの範囲(degree)
-    Returns:
-      min_range_h : hの範囲の最小値
-      max_range_h : hの範囲の最大値
-    """
-    # HSV表現の色相を計算する
-    if np.argmin(color_map) == 0:
-        # min=R
-        h = 60.0 * ( (color_map[2] - color_map[1])
-                         / (np.max(color_map) - np.min(color_map)) ) + 180.0
-    elif np.argmin(color_map) == 1:
-        # min=G
-        h = 60.0 * ( (color_map[0] - color_map[2])
-                         / (np.max(color_map) - np.min(color_map)) ) + 300.0
-    else:
-        # min=B
-        h = 60.0 * ( (color_map[1] - color_map[0]) 
-                    / (np.max(color_map) - np.min(color_map)) ) + 60.0
-    # 0~255の整数に収める
-    min_range_h = ((h-h_width)) * 180.0/360.0
-    max_range_h = ((h+h_width)) * 180.0/360.0
-    #print 'h : {} ~ {} ~ {}'.format((h-h_width)%360, h%360, (h+h_width)%360)
-    return (min_range_h, max_range_h)
-
 def motion_model(d, mu=0.0, sig=0.1):
     """
     状態遷移モデルの定義
@@ -48,26 +20,15 @@ def observation_model(frame_hsv, x, y, loc=0, scale=20):
         image_h = image_hsv[int(pix[1]), int(pix[0]), 0]
         image_s = image_hsv[int(pix[1]), int(pix[0]), 1]
         if image_s < saturation:
-            return 0.000001
-        p = stats.norm.pdf(image_h, loc=loc, scale=scale)
+            return 0e-12
+        p1 = stats.norm.pdf(image_h, loc=loc, scale=scale)
+        p2 = stats.norm.pdf(image_h-179, loc=loc, scale=scale)
+        p = max(p1, p2)
         return p
     w = np.array(
         map(lambda s:color_hist(frame_hsv, s, loc, scale), zip(x,y))
         )
-    #w = np.array(map(lambda s:stats.norm.pdf(frame_hsv[int(s[1]), int(s[0]), 0], loc=loc, scale=scale) ,zip(x,y)))
     return w
-#def observation_model(frame_hsv, x, y, min_h, max_h):
-#    M = len(x)
-#    w = np.zeros(M)
-#    for i, (x_,y_) in enumerate(zip(x, y)):
-#          frame_h = frame_hsv[int(y_), int(x_), 0]
-#          frame_s = frame_hsv[int(y_), int(x_), 1]
-#          #print int(x_), int(y_), frame_h
-#          if (((frame_h>min_h) and (frame_h<=max_h)) or ((frame_h+180>min_h)and(frame_h+180<=max_h))) and frame_s>=128 :
-#              w[i] = 1.0
-#          else:
-#              w[i] = 1.0/M
-#    return w
 
 if __name__=="__main__":
     M = 1000 # パーティクルの数
@@ -100,11 +61,6 @@ if __name__=="__main__":
             frame_hsv,
             pred_x*(width-1), pred_y*(height-1),
             loc=hsv_target[0][0][0], scale=20.0)
-        #(min_h, max_h) = getHueRange((1,0,0), h_width = 30)
-        #weight = observation_model(
-        #    frame_hsv,
-        #    pred_x*(width-1), pred_y*(height-1),
-        #    min_h, max_h)
         p = weight / np.sum(weight)
 
         # リサンプリング
