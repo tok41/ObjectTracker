@@ -9,5 +9,5 @@
 ## How To Use
 
 ```
-$ 
+$ python objectTracker.py
 ```
